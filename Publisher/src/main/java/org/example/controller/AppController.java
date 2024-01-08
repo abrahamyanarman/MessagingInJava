@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.example.service.ActiveMQMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppController.class);
     private static final String DESTINATION = "notifications.topic";
+    private static final String TMP_DESTINATION = "tmp.notifications.topic";
 
     @Autowired
     private ActiveMQMessageSender activeMQMessageSender;
@@ -33,6 +35,23 @@ public class AppController {
             return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body("ERROR-1001: Error during processing message: " + message + " to be sent to destination: " + DESTINATION);
+        }
+    }
+
+    @PostMapping("/sendMessageToTmpQueue/{message}")
+    public ResponseEntity<String> sendMessageWithRelyTo(@PathVariable String message) {
+        LOGGER.info("Sending message: " + message + "to destination: " + TMP_DESTINATION);
+        String response = activeMQMessageSender.sendMessageWithReplyTo(TMP_DESTINATION, message);
+        if (StringUtils.isNoneBlank(response)) {
+            LOGGER.info("Message: " + message + "was sent to destination: " + TMP_DESTINATION);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("Message: " + message + "was sent to destination: " + TMP_DESTINATION + ", and received response " + response);
+        } else {
+            LOGGER.error("Exception occurred during processing message: " + message + " to be sent to destination: " + TMP_DESTINATION);
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("ERROR-1001: Error during processing message: " + message + " to be sent to destination: " + TMP_DESTINATION);
         }
     }
 }

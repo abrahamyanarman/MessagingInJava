@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
@@ -42,7 +43,8 @@ public class JmsConfig {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory());
         factory.setPubSubDomain(true);
-        factory.setClientId("Non_Durable_Subscriber");
+//        factory.setConcurrency("3-10");
+//        factory.setClientId("Non_Durable_Subscriber");
         factory.setMessageConverter(jacksonJmsMessageConverter());
         factory.setErrorHandler(t -> LOGGER.info("Handling error in listening for messages, error: " + t.getMessage()));
         return factory;
@@ -59,5 +61,13 @@ public class JmsConfig {
         factory.setConcurrency("1-1");
         factory.setErrorHandler(t -> LOGGER.info("Handling error in listening for messages, error: " + t.getMessage()));
         return factory;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate() {
+        JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory());
+        jmsTemplate.setMessageConverter(jacksonJmsMessageConverter());
+        jmsTemplate.setPubSubDomain(true);
+        return jmsTemplate;
     }
 }
