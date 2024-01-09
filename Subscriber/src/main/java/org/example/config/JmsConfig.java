@@ -43,8 +43,6 @@ public class JmsConfig {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory());
         factory.setPubSubDomain(true);
-//        factory.setConcurrency("3-10");
-//        factory.setClientId("Non_Durable_Subscriber");
         factory.setMessageConverter(jacksonJmsMessageConverter());
         factory.setErrorHandler(t -> LOGGER.info("Handling error in listening for messages, error: " + t.getMessage()));
         return factory;
@@ -59,6 +57,15 @@ public class JmsConfig {
         factory.setClientId("Durable_Subscriber");
         factory.setSubscriptionDurable(true);
         factory.setConcurrency("1-1");
+        factory.setErrorHandler(t -> LOGGER.info("Handling error in listening for messages, error: " + t.getMessage()));
+        return factory;
+    }
+
+    @Bean
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory() {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory());
+        factory.setMessageConverter(jacksonJmsMessageConverter());
         factory.setErrorHandler(t -> LOGGER.info("Handling error in listening for messages, error: " + t.getMessage()));
         return factory;
     }

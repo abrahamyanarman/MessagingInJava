@@ -44,4 +44,14 @@ public class ActiveMQMessageSender {
         return "Received response: " + responseText;
     }
 
+    public void sendMessageToVirtualTopic(String destination, String message) {
+        jmsTemplate.convertAndSend(destination, message);
+        jmsTemplate.convertAndSend(destination, message, messageProcessor -> {
+            messageProcessor.setStringProperty("_type", String.class.getName());
+            messageProcessor.setStringProperty("VirtualTopic", "myVirtualTopic");
+            messageProcessor.setStringProperty("Consumer", "Consumer1");
+            return messageProcessor;
+        });
+    }
+
 }

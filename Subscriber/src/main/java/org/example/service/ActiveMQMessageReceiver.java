@@ -41,4 +41,9 @@ public class ActiveMQMessageReceiver {
             return responseMessage;
         });
     }
+
+    @JmsListener(destination = "Consumer.Consumer1.VirtualTopic.myVirtualTopic")
+    public void receiveMessageFromVirtualTopic(String message) {
+        System.out.println("Received message from virtual topic: " + message);
+    }
 }

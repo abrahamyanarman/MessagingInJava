@@ -9,13 +9,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AppController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppController.class);
     private static final String DESTINATION = "notifications.topic";
+    private static final String DESTINATION_OF_VIRTUAL_TOPIC = "VirtualTopic.myVirtualTopic"; // <policyEntry topic="VirtualTopic.>" /> added into activemq.xml > destinationPolicy
     private static final String TMP_DESTINATION = "tmp.notifications.topic";
 
     @Autowired
@@ -52,6 +52,23 @@ public class AppController {
             return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body("ERROR-1001: Error during processing message: " + message + " to be sent to destination: " + TMP_DESTINATION);
+        }
+    }
+
+    @PostMapping("/sendMessageToVirtualTopic/{message}")
+    public ResponseEntity<String> sendMessageToVirtualTopic(@PathVariable String message) {
+        LOGGER.info("Sending message To VirtualTopic: " + message);
+        try {
+            activeMQMessageSender.sendMessageToVirtualTopic(DESTINATION_OF_VIRTUAL_TOPIC, message);
+            LOGGER.info("Message: " + message + "was sent to destination: " + DESTINATION_OF_VIRTUAL_TOPIC);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("Message: " + message + "was sent to destination: " + DESTINATION_OF_VIRTUAL_TOPIC);
+        } catch (Exception e) {
+            LOGGER.error("Exception occurred during processing message: " + message + " to be sent to destination: " + DESTINATION_OF_VIRTUAL_TOPIC);
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body("ERROR-1001: Error during processing message: " + message + " to be sent to destination: " + DESTINATION_OF_VIRTUAL_TOPIC);
         }
     }
 }
